@@ -2,8 +2,11 @@ import os
 from fastapi import UploadFile
 from PyPDF2 import PdfReader
 from uuid import uuid4
+from dotenv import load_dotenv
 
-UPLOAD_DIR = "uploads"
+load_dotenv()
+
+UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 
 def save_file(file: UploadFile):
     if not os.path.exists(UPLOAD_DIR):

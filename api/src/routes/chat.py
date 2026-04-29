@@ -1,14 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 
 from src.services.embedding_service import search_index, embed_query
 from src.services.store import documents_store
+from src.services.llm_service import generate_response
+from src.models.models import ChatRequest
 
 router = APIRouter(prefix="/chat", tags=["chat"])
-
-class ChatRequest(BaseModel):
-    doc_id: str
-    question: str
 
 
 @router.post("/")
@@ -23,9 +20,12 @@ def chat(req: ChatRequest):
 
     relevant_chunks = [doc["chunks"][i] for i in indices]
 
+    response = generate_response(req.question, relevant_chunks)
+
     return {
         "question": req.question,
-        "relevant_chunks": relevant_chunks
+        "relevant_chunks": relevant_chunks,
+        "response": response
     }
 
 

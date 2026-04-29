@@ -1,8 +1,21 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+import os
+from dotenv import load_dotenv
 
 from src.routes import upload, chat
 
-app = FastAPI()
+load_dotenv()
+
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not os.path.exists(UPLOAD_DIR):
+        os.mkdir(UPLOAD_DIR)
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 def fun():
