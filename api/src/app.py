@@ -4,10 +4,9 @@ import os
 from dotenv import load_dotenv
 
 from src.routes import upload, chat
+from src.config.env import settings
 
-load_dotenv()
-
-UPLOAD_DIR = os.getenv("UPLOAD_DIR", "uploads")
+UPLOAD_DIR = settings.upload_dir
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

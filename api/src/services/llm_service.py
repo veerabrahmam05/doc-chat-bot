@@ -1,7 +1,8 @@
 import requests
-import os
 
-OLLAMA_URL = os.getenv("OLLAMA_URL")
+from src.config.env import settings
+
+OLLAMA_URL = settings.ollama_url
 
 def generate_response(question: str, context_chunks: list[str]):
     context = "\n\n".join(context_chunks)
