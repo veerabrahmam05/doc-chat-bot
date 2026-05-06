@@ -5,11 +5,13 @@ import os
 
 from src.routes import upload, chat
 from src.config.env import settings
+from src.config.db import create_tables
 
 UPLOAD_DIR = settings.upload_dir
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    create_tables()
     if not os.path.exists(UPLOAD_DIR):
         os.mkdir(UPLOAD_DIR)
     yield
