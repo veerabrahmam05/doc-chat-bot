@@ -1,6 +1,9 @@
 from sentence_transformers import SentenceTransformer
+from src.config.env import settings
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+HF_TOKEN = settings.hf_token
+
+model = SentenceTransformer(model_name_or_path="all-MiniLM-L6-v2", token=HF_TOKEN)
 
 def chunk_text(text: str, chunk_size = 500, overlap = 50):
     chunks = []

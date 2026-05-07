@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
 
-from src.routes import upload, chat
+from src.routes import upload, chat, auth
 from src.config.env import settings
 from src.config.db import create_tables
 
@@ -29,5 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+app.include_router(router=auth.router)
 app.include_router(router=upload.router)
 app.include_router(router=chat.router)
