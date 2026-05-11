@@ -1,14 +1,12 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 from datetime import timedelta
 
 from src.config.env import settings
-from src.config.db import get_db
-from src.services.auth_service import authenticate_user, create_access_token, hash_password
+from src.models.schemas import User as UserDoc
 from src.models.models import Token, UserInDB as UserModel, User as UserResponse
-from src.models.schemas import User as UserSchema
+from src.services.auth_service import authenticate_user, create_access_token, hash_password
 
 DATABASE_URL = settings.database_url
 JWT_SECRET = settings.jwt_secret
@@ -17,11 +15,11 @@ TOKEN_EXPIRES_IN = settings.token_expires_in
 
 router = APIRouter(tags=["auth"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
-@router.post("/token", response_model=Token)
-def login(formdata: Annotated[OAuth2PasswordRequestForm, Depends()], session: Session = Depends(get_db)):
-    user = authenticate_user(session, formdata.username, formdata.password)
+@router.post("/login", response_model=Token)
+async def login(formdata: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    user = await authenticate_user(formdata.username, formdata.password)
 
     if not user:
         raise HTTPException(
@@ -39,12 +37,9 @@ def login(formdata: Annotated[OAuth2PasswordRequestForm, Depends()], session: Se
     )
 
 @router.post("/signup", response_model=UserResponse)
-def create_new_user(user_data: UserModel, session: Session = Depends(get_db)):
+async def create_new_user(user_data: UserModel):
     hashed_password = hash_password(user_data.password)
-    user = UserSchema(username=user_data.username, email=user_data.email, password=hashed_password)
-
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-
-    return user
+    user_doc = UserDoc(username=user_data.username, email=user_data.email, password=hashed_password)
+    await user_doc.insert()
+    # Return a UserResponse (Pydantic) without password
+    return UserResponse(username=user_doc.username, email=user_doc.email)

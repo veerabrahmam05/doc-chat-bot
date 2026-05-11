@@ -1,7 +1,5 @@
 import jwt
 from pwdlib import PasswordHash
-from sqlalchemy.orm import Session
-from sqlalchemy import select
 from datetime import timedelta, timezone, datetime
 
 from src.models.schemas import User
@@ -20,19 +18,17 @@ def verify_password(plain_password: str, password: str):
 def hash_password(plain_password: str):
     return password_hash.hash(plain_password)
 
-def get_user(session: Session, username: str):
-    query = select(User).where(User.username == username)
+async def get_user(username: str):
+    return await User.find_one(User.username == username)
 
-    return session.execute(query).scalar_one_or_none()
-
-def authenticate_user(session: Session, username: str, password: str):
-    user = get_user(session, username)
+async def authenticate_user(username: str, password: str):
+    user = await get_user(username)
     if not user:
+        # Mitigate timing attacks by performing fake verification
         verify_password(password, dummy_password)
         return False
     if not verify_password(password, user.password):
         return False
-    
     return user
 
 def create_access_token(data: dict, expires_delta: timedelta):

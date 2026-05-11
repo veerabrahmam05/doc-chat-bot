@@ -1,20 +1,10 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
+from pymongo import AsyncMongoClient
+from beanie import init_beanie
+from src.models.schemas import User
 from src.config.env import settings
-from src.models.schemas import Base
 
-DATABASE_URL = settings.database_url
-
-engine = create_engine(url=DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
-
-def create_tables():
-    Base.metadata.create_all(bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def init_db():
+    client = AsyncMongoClient(settings.database_url)
+    # Use the database specified in the connection string (MongoDB driver picks the default DB)
+    db = client.get_default_database()
+    await init_beanie(database=db, document_models=[User])
