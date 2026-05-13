@@ -4,7 +4,7 @@ from uuid import uuid4
 from src.services.file_service import save_file, detect_file_type, extract_text_from_pdf
 from src.services.embedding_service import chunk_text, generate_embeddings, create_faiss_index
 from src.services.store import documents_store
-from src.routes.auth import oauth2_scheme
+from src.services.auth_service import oauth2_scheme
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 

@@ -1,9 +1,14 @@
 import jwt
 from pwdlib import PasswordHash
 from datetime import timedelta, timezone, datetime
+from fastapi import status, HTTPException, Depends
 
 from src.models.schemas import User
+from src.models.models import TokenData
 from src.config.env import settings
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 SECRET = settings.jwt_secret
 ALGORITHM = settings.jwt_algorithm
@@ -40,3 +45,25 @@ def create_access_token(data: dict, expires_delta: timedelta):
     encoded_jwt = jwt.encode(to_encode, SECRET, algorithm=ALGORITHM)
 
     return encoded_jwt
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credential_errors = HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid user credentials",
+        headers={"WWW-Authenticate": "Bearer"}
+    )
+    try:
+        payload = jwt.decode(token, SECRET, algorithms=ALGORITHM)
+        username = payload.get("sub")
+        if not username:
+            raise credential_errors
+        token_data = TokenData(username=username)
+    except Exception:
+        raise credential_errors
+
+    user = await User.find_one(User.username == token_data.username)
+
+    if user is None:
+        raise credential_errors
+
+    return user

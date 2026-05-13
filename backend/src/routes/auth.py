@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from typing import Annotated
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 
 from src.config.env import settings
@@ -14,8 +14,6 @@ JWT_ALGORITHM = settings.jwt_algorithm
 TOKEN_EXPIRES_IN = settings.token_expires_in
 
 router = APIRouter(tags=["auth"])
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 @router.post("/login", response_model=Token)
 async def login(formdata: Annotated[OAuth2PasswordRequestForm, Depends()]):
