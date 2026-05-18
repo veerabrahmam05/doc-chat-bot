@@ -6,7 +6,14 @@ import { Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function SignupPage() {
@@ -16,8 +23,35 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement signup logic
-    console.log("Signup:", { name, email, password });
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: name,
+            email: email,
+            password: password,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        alert(err.detail || "Signup failed");
+        return;
+      }
+
+      // Successfully created account, redirect to login
+      alert("Account created successfully. Please log in.");
+      window.location.href = "/";
+    } catch (e) {
+      console.error(e);
+      alert("An error occurred during signup.");
+    }
   };
 
   return (
@@ -34,7 +68,9 @@ export default function SignupPage() {
             </div>
           </div>
           <CardTitle className="text-2xl">Create an account</CardTitle>
-          <CardDescription>Sign up to start chatting with your documents</CardDescription>
+          <CardDescription>
+            Sign up to start chatting with your documents
+          </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">

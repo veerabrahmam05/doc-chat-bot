@@ -22,8 +22,36 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log("Login:", { email, password });
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({
+            username: email,
+            password: password,
+          }).toString(),
+        },
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        alert(err.detail || "Login failed");
+        return;
+      }
+
+      const data = await response.json();
+      // Store token for later API calls
+      localStorage.setItem("authToken", data.access_token);
+      // Redirect to the main chat page
+      window.location.href = "/chat";
+    } catch (e) {
+      console.error(e);
+      alert("An error occurred during login.");
+    }
   };
 
   return (
@@ -50,7 +78,6 @@ export default function LoginPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                type="email"
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

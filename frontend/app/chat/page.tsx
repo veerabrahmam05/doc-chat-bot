@@ -105,9 +105,12 @@ export default function ChatPage() {
           formData.append("file", uploadedFile.file);
         });
 
-        response = await fetch("http://localhost:9000/upload", {
+        response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/upload`, {
           method: "POST",
           body: formData,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
         });
 
         const data = await response.json();
@@ -115,10 +118,11 @@ export default function ChatPage() {
         console.log("doc id: ", docId);
         setUploadedFiles([]);
       } else {
-        response = await fetch("http://localhost:9000/chat", {
+        response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"}/chat`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
           },
           body: JSON.stringify({
             doc_id: docId,
